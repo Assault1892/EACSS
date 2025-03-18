@@ -1,9 +1,9 @@
 # MARK: IMPORTS
-import subprocess
 from tomllib import load
 import pathlib
 import random
 import shutil
+import os
 import sys
 from PIL import Image
 
@@ -96,6 +96,9 @@ def restore_splashscreen(isSplashExist: bool):
 # MARK: MAIN FUNCTION
 
 
+print(str(ARGS))
+
+
 def main():
     print("# =========================================== #")
     print("# EasyAntiCheat Splash Screen Changer - EACSS #")
@@ -137,6 +140,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    game_path = "./start_protected_game.exe"  # ゲームの実行ファイルのパスを設定
-    subprocess.run([game_path])
+    os.startfile("start_protected_game.exe")
     sys.exit()
