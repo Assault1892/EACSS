@@ -7,8 +7,12 @@ import shutil
 import sys
 from PIL import Image
 
-with open("config.toml", "rb") as conf_file:
-    conf = load(conf_file)
+try:
+    with open("config.toml", "rb") as conf_file:
+        conf = load(conf_file)
+except FileNotFoundError:
+    print("config.tomlが見つかりません！")
+    sys.exit(1)
 
 # MARK: VARIABLES
 
