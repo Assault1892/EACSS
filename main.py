@@ -1,4 +1,5 @@
 # MARK: IMPORTS
+import subprocess
 from tomllib import load
 import pathlib
 import random
@@ -9,7 +10,7 @@ from PIL import Image
 with open("config.toml", "rb") as conf_file:
     conf = load(conf_file)
 
-# MARK: VARIABLES
+# MARK: VARIABLES, FUNCTIONS
 
 SRC_DIR = conf["src_dir"]
 
@@ -19,8 +20,6 @@ SRC_FILES = list(
 )
 
 ARGS = sys.argv
-
-# MARK : FUNCTIONS
 
 
 def get_random_image():
@@ -88,41 +87,46 @@ def restore_splashscreen(isSplashExist: bool):
         print("バックアップファイルが存在しません！")
         pass
 
-# MARK: MAIN
+# MARK: MAIN FUNCTION
 
 
-print("# =========================================== #")
-print("# EasyAntiCheat Splash Screen Changer - EACSS #")
-print("# =========================================== #")
+def main():
+    print("# =========================================== #")
+    print("# EasyAntiCheat Splash Screen Changer - EACSS #")
+    print("# =========================================== #")
+
+    if check_source_dir():
+        pass
+    else:
+        print("config.tomlを確認してください！")
+        sys.exit(1)
+
+    # 起動引数を取得。restoreの場合はバックアップから復元のみ。
+    if len(ARGS) > 1 and ARGS[1] == "restore":
+        restore_splashscreen(check_splashscreen())
+    # 起動引数が与えられていない (通常起動) か、restore以外の場合は通常動作。
+    else:
+        backup_splashscreen(check_splashscreen())
+        # 画像選択
+        print("ランダムな画像を選択します！")
+        random_image = get_random_image()
+        # 画像をリサイズ
+        print("画像をリサイズします！")
+
+        try:
+            img = Image.open(random_image)
+            (width, height) = conf["res_width"], conf["res_height"]
+            img_resized = img.resize((width, height))
+            # リサイズした画像を保存
+            print("リサイズした画像を上書きします！")
+            img_resized.save("./EasyAntiCheat/SplashScreen.png")
+        except Exception as e:
+            print("画像のリサイズに失敗しました！")
+            print(e)
+    print("処理が完了しました！")
 
 
-if check_source_dir():
-    pass
-else:
-    print("config.tomlを確認してください！")
-    sys.exit(1)
-
-# 起動引数を取得。restoreの場合はバックアップから復元のみ。
-if ARGS[1] == "restore":
-    restore_splashscreen(check_splashscreen())
-# 起動引数が与えられていない (通常起動) か、restore以外の場合は通常動作。
-else:
-    backup_splashscreen(check_splashscreen())
-    # 画像選択
-    print("ランダムな画像を選択します！")
-    random_image = get_random_image()
-    # 画像をリサイズ
-    print("画像をリサイズします！")
-
-    try:
-        img = Image.open(random_image)
-        (width, height) = conf["res_width"], conf["res_height"]
-        img_resized = img.resize((width, height))
-        # リサイズした画像を保存
-        print("リサイズした画像を上書きします！")
-        img_resized.save("./EasyAntiCheat/SplashScreen.png")
-    except Exception as e:
-        print("画像のリサイズに失敗しました！")
-        print(e)
-
-print("処理が完了しました！")
+main()
+game_path = "./start_protected_game.exe"  # ゲームの実行ファイルのパスを設定
+subprocess.run([game_path])
+sys.exit()
