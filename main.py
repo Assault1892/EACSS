@@ -106,6 +106,7 @@ def main():
     # 起動引数を取得。restoreの場合はバックアップから復元のみ。
     if len(ARGS) > 1 and ARGS[1] == "restore":
         restore_splashscreen(check_splashscreen())
+        sys.exit()
     # 起動引数が与えられていない (通常起動) か、restore以外の場合は通常動作。
     else:
         backup_splashscreen(check_splashscreen())
