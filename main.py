@@ -10,7 +10,7 @@ from PIL import Image
 with open("config.toml", "rb") as conf_file:
     conf = load(conf_file)
 
-# MARK: VARIABLES, FUNCTIONS
+# MARK: VARIABLES
 
 SRC_DIR = conf["src_dir"]
 
@@ -20,6 +20,8 @@ SRC_FILES = list(
 )
 
 ARGS = sys.argv
+
+# MARK: FUNCTIONS
 
 
 def get_random_image():
@@ -125,8 +127,11 @@ def main():
             print(e)
     print("処理が完了しました！")
 
+# MARK: RUN GAME
 
-main()
-game_path = "./start_protected_game.exe"  # ゲームの実行ファイルのパスを設定
-subprocess.run([game_path])
-sys.exit()
+
+if __name__ == "__main__":
+    main()
+    game_path = "./start_protected_game.exe"  # ゲームの実行ファイルのパスを設定
+    subprocess.run([game_path])
+    sys.exit()
