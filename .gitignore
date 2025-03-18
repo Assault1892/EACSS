@@ -2,6 +2,9 @@
 EasyAntiCheat/
 src_dir/
 
+# ビルド環境
+venv_pyinstaller/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
