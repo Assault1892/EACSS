@@ -95,6 +95,7 @@ print("# =========================================== #")
 print("# EasyAntiCheat Splash Screen Changer - EACSS #")
 print("# =========================================== #")
 
+
 if check_source_dir():
     pass
 else:
@@ -102,9 +103,8 @@ else:
     sys.exit(1)
 
 # 起動引数を取得。restoreの場合はバックアップから復元のみ。
-if len(ARGS) >= 2:
-    if ARGS[1] == "restore":
-        restore_splashscreen(check_splashscreen())
+if ARGS[1] == "restore":
+    restore_splashscreen(check_splashscreen())
 # 起動引数が与えられていない (通常起動) か、restore以外の場合は通常動作。
 else:
     backup_splashscreen(check_splashscreen())
@@ -113,11 +113,16 @@ else:
     random_image = get_random_image()
     # 画像をリサイズ
     print("画像をリサイズします！")
-    img = Image.open(random_image)
-    (width, height) = conf["res_width"], conf["res_height"]
-    img_resized = img.resize((width, height))
-    # リサイズした画像を保存
-    print("リサイズした画像を上書きします！")
-    img_resized.save("./EasyAntiCheat/SplashScreen.png")
+
+    try:
+        img = Image.open(random_image)
+        (width, height) = conf["res_width"], conf["res_height"]
+        img_resized = img.resize((width, height))
+        # リサイズした画像を保存
+        print("リサイズした画像を上書きします！")
+        img_resized.save("./EasyAntiCheat/SplashScreen.png")
+    except Exception as e:
+        print("画像のリサイズに失敗しました！")
+        print(e)
 
 print("処理が完了しました！")
