@@ -17,8 +17,6 @@ SRC_DIR = conf["src_dir"]
 SRC_FILES = list(
     pathlib.Path(SRC_DIR).glob("*.png")
 )
-# ソースファイルのリスト数を上限にランダムな整数を生成
-SRC_RAND = random.randint(0, len(SRC_FILES) - 1)
 
 ARGS = sys.argv
 
@@ -27,7 +25,29 @@ ARGS = sys.argv
 
 def get_random_image():
     # これいる？
-    return SRC_FILES[SRC_RAND]
+    return SRC_FILES[random.randint(0, len(SRC_FILES) - 1)]
+
+
+def check_source_dir():
+    """
+    _summary_
+    パス自体の確認や、パスが存在するかどうか、画像ファイルが存在するかどうかの確認を行う
+    Returns:
+        bool : Trueの場合はソースディレクトリが存在し、使用可能。Falseの場合は存在しないか、何らかの理由で使用不可能。
+    """
+    # ソースディレクトリの設定確認
+    if SRC_DIR == "":
+        print("ソースディレクトリが設定されていません！")
+        return False
+    # ソースディレクトリの存在確認
+    elif pathlib.Path(SRC_DIR).exists() is False:
+        print("ソースディレクトリが存在しません！")
+        return False
+    elif len(SRC_FILES) == 0:
+        print("ソースディレクトリに画像ファイルが存在しません！")
+        return False
+    else:
+        return True
 
 
 def check_splashscreen():
@@ -74,6 +94,12 @@ def restore_splashscreen(isSplashExist: bool):
 print("# =========================================== #")
 print("# EasyAntiCheat Splash Screen Changer - EACSS #")
 print("# =========================================== #")
+
+if check_source_dir():
+    pass
+else:
+    print("config.tomlを確認してください！")
+    sys.exit(1)
 
 # 起動引数を取得。restoreの場合はバックアップから復元のみ。
 if len(ARGS) >= 2:
