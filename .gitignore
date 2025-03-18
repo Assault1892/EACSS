@@ -1,5 +1,6 @@
 # テスト用フォルダ
 EasyAntiCheat/
+src_dir/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
