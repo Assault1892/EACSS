@@ -34,7 +34,7 @@ for i in ARGS:
     print(str(count) + ": " + i)
     count = count + 1
 
-GAME_EXECUTABLE = " ".join([str(i) for i in ARGS])
+GAME_EXECUTABLE = " ".join([str(i) for i in ARGS[1:]])
 
 print("起動するゲームの実行ファイル (引数こみ): " + GAME_EXECUTABLE)
 
