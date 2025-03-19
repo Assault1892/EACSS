@@ -38,7 +38,7 @@ GAME_EXECUTABLE = " ".join([str(i) for i in ARGS[1:]])
 
 print("起動するゲームの実行ファイル (引数こみ): " + GAME_EXECUTABLE)
 
-time.sleep(10)
+# time.sleep(10)
 
 
 # MARK: FUNCTIONS
