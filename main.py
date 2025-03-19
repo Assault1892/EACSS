@@ -1,4 +1,5 @@
 # MARK: IMPORTS
+import time
 from tomllib import load
 import pathlib
 import random
@@ -24,6 +25,21 @@ SRC_FILES = list(
 )
 
 ARGS = sys.argv
+
+# MARK : TEST
+
+print("起動引数: " + str(ARGS))
+count = 0
+for i in ARGS:
+    print(str(count) + ": " + i)
+    count = count + 1
+
+GAME_EXECUTABLE = " ".join([str(i) for i in ARGS])
+
+print("起動するゲームの実行ファイル (引数こみ): " + GAME_EXECUTABLE)
+
+time.sleep(10)
+
 
 # MARK: FUNCTIONS
 
@@ -140,5 +156,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    os.startfile("start_protected_game.exe")
+    os.startfile(GAME_EXECUTABLE)
     sys.exit()
