@@ -1,4 +1,5 @@
 # MARK: IMPORTS
+import subprocess
 from tomllib import load
 import pathlib
 import random
@@ -24,6 +25,8 @@ SRC_FILES = list(
 )
 
 ARGS = sys.argv
+
+GAME_EXECUTABLE = ARGS[1:]
 
 # MARK: FUNCTIONS
 
@@ -140,5 +143,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    os.startfile("start_protected_game.exe")
+    subprocess.Popen(GAME_EXECUTABLE)
     sys.exit()
