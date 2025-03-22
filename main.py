@@ -6,136 +6,149 @@ import random
 import shutil
 import os
 import sys
-from PIL import Image
-
-try:
-    with open("config.toml", "rb") as conf_file:
-        conf = load(conf_file)
-except FileNotFoundError:
-    print("config.tomlが見つかりません！")
-    sys.exit(1)
-
-# MARK: VARIABLES
-
-SRC_DIR = conf["src_dir"]
-
-# ソースディレクトリの画像ファイルをリスト化
-SRC_FILES = list(
-    pathlib.Path(SRC_DIR).glob("*.png")
-)
-
-ARGS = sys.argv
-
-GAME_EXECUTABLE = ARGS[1:]
+import cv2
 
 # MARK: FUNCTIONS
+def load_config():
+    """設定ファイルを読み込む"""
+    try:
+        with open("config.toml", "rb") as conf_file:
+            return load(conf_file)
+    except FileNotFoundError:
+        print("config.tomlが見つかりません！")
+        sys.exit(1)
 
+def get_source_files(src_dir):
+    """ソースディレクトリから画像ファイルのリストを取得"""
+    # 複数の画像形式をサポート
+    image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.gif"]
+    files = []
+    src_path = pathlib.Path(src_dir)
+    
+    for ext in image_extensions:
+        files.extend(src_path.glob(ext))
+    
+    return files
 
-def get_random_image():
-    return random.choice(SRC_FILES)
+def get_random_image(src_files):
+    """ランダムな画像を選択"""
+    if not src_files:
+        raise ValueError("画像ファイルが見つかりません")
+    return random.choice(src_files)
 
-
-def check_source_dir():
-    """
-    _summary_
-    パス自体の確認や、パスが存在するかどうか、画像ファイルが存在するかどうかの確認を行う
-    Returns:
-        bool : Trueの場合はソースディレクトリが存在し、使用可能。Falseの場合は存在しないか、何らかの理由で使用不可能。
-    """
-    if not SRC_DIR:
+def validate_config(src_dir, src_files):
+    """config.tomlの設定を検証"""
+    if not src_dir:
         print("ソースディレクトリが設定されていません！")
         return False
-
-    src_path = pathlib.Path(SRC_DIR)
-    if not src_path.exists() or not SRC_FILES:
-        print("ソースディレクトリが存在しないか、画像ファイルが存在しません！")
+    
+    src_path = pathlib.Path(src_dir)
+    if not src_path.exists():
+        print(f"ソースディレクトリ '{src_dir}' が存在しません！")
         return False
-
+    
+    if not src_path.is_dir():
+        print(f"'{src_dir}' はディレクトリではありません！")
+        return False
+        
+    if not src_files:
+        print(f"'{src_dir}' に画像ファイルが見つかりません！")
+        return False
+        
     return True
 
-
-def check_splashscreen():
-    """_summary_
-    スプラッシュスクリーンのバックアップファイルが存在するかどうかの確認。
-    Returns:
-        bool : Trueの場合はバックアップファイルが存在する。Falseの場合は存在しない。
-    """
-    backup_path = pathlib.Path("./EasyAntiCheat/SplashScreen.png.orig")
-    if backup_path.exists():
-        print("バックアップファイルがすでに存在します！")
-        return True
-
-    print("オリジナルのファイルが存在しません。おそらく初回起動のようです！")
+def handle_backup(action: str):
+    """バックアップの作成または復元"""
+    splash_dir = pathlib.Path("./EasyAntiCheat")
+    splash_path = splash_dir / "SplashScreen.png"
+    backup_path = splash_dir / "SplashScreen.png.orig"
+    
+    # ディレクトリの存在チェック
+    if not splash_dir.exists():
+        print("EasyAntiCheatディレクトリが見つかりません！")
+        return False
+    
+    if action == "backup":
+        if not splash_path.exists():
+            print("SplashScreen.pngが見つかりません！")
+            return False
+            
+        if not backup_path.exists():
+            try:
+                print("バックアップを作成します！")
+                shutil.copy2(splash_path, backup_path)  # copy2でメタデータも保持
+                print("バックアップが完了しました！")
+                return True
+            except IOError as e:
+                print(f"バックアップの作成に失敗しました: {e}")
+                return False
+        else:
+            print("バックアップはすでに存在します")
+            return True
+            
+    elif action == "restore":
+        if backup_path.exists():
+            try:
+                print("バックアップから復元します！")
+                shutil.copy2(backup_path, splash_path)
+                print("バックアップからの復元が完了しました！")
+                return True
+            except IOError as e:
+                print(f"復元に失敗しました: {e}")
+                return False
+        else:
+            print("バックアップファイルが存在しません！")
+            return False
+    
     return False
 
-
-def backup_splashscreen(isSplashExist: bool):
-    if not isSplashExist:
-        print("バックアップを作成します！")
-        shutil.copy(
-            "./EasyAntiCheat/SplashScreen.png",
-            "./EasyAntiCheat/SplashScreen.png.orig"
-        )
-        print("バックアップが完了しました！")
-
-
-def restore_splashscreen(isSplashExist: bool):
-    if isSplashExist:
-        print("バックアップから復元します！")
-        shutil.copy(
-            "./EasyAntiCheat/SplashScreen.png.orig",
-            "./EasyAntiCheat/SplashScreen.png"
-        )
-        print("バックアップからの復元が完了しました！")
-    else:
-        print("バックアップファイルが存在しません！")
+def resize_image(image_path, width, height):
+    """画像をリサイズして保存"""
+    try:
+        img = cv2.imread(str(image_path))
+        # より高速なリサイズ手法を使用
+        img_resized = cv2.resize(img, (width, height), interpolation=cv2.INTER_LINEAR)
+        cv2.imwrite("./EasyAntiCheat/SplashScreen.png", img_resized, [cv2.IMWRITE_PNG_COMPRESSION, 3])
+        print("リサイズした画像を上書きしました！")
+        return True
+    except Exception as e:
+        print("画像のリサイズに失敗しました！", e)
+        return False
 
 # MARK: MAIN FUNCTION
-
-
-print(str(ARGS))
-
-
 def main():
-    print("# =========================================== #")
     print("# EasyAntiCheat Splash Screen Changer - EACSS #")
-    print("# =========================================== #")
-
-    if check_source_dir():
-        pass
-    else:
+    
+    # 設定ファイルの読み込みを関数内で行う
+    conf = load_config()
+    src_dir = conf["src_dir"]
+    
+    # 必要な時だけファイルリストを取得
+    src_files = get_source_files(src_dir)
+    
+    if not validate_config(src_dir, src_files):
         print("config.tomlを確認してください！")
         sys.exit(1)
 
-    # 起動引数を取得。restoreの場合はバックアップから復元のみ。
-    if len(ARGS) > 1 and ARGS[1] == "restore":
-        restore_splashscreen(check_splashscreen())
-        sys.exit()
-    # 起動引数が与えられていない (通常起動) か、restore以外の場合は通常動作。
+    args = sys.argv
+    game_executable = args[1:]
+
+    if len(args) > 1 and args[1] == "restore":
+        handle_backup("restore")
     else:
-        backup_splashscreen(check_splashscreen())
-        # 画像選択
+        handle_backup("backup")
         print("ランダムな画像を選択します！")
-        random_image = get_random_image()
-        # 画像をリサイズ
-        print("画像をリサイズします！")
-
-        try:
-            img = Image.open(random_image)
-            (width, height) = conf["res_width"], conf["res_height"]
-            img_resized = img.resize((width, height))
-            # リサイズした画像を保存
-            print("リサイズした画像を上書きします！")
-            img_resized.save("./EasyAntiCheat/SplashScreen.png")
-        except Exception as e:
-            print("画像のリサイズに失敗しました！")
-            print(e)
+        resize_image(get_random_image(src_files), conf["res_width"], conf["res_height"])
+    
     print("処理が完了しました！")
-
-# MARK: RUN GAME
-
+    
+    try:
+        if len(game_executable) > 0:
+            subprocess.Popen(game_executable)
+    except FileNotFoundError:
+        print("ゲームの実行ファイルが見つかりませんでした。パスを確認してください。")
+    
+    sys.exit()
 
 if __name__ == "__main__":
     main()
-    subprocess.Popen(GAME_EXECUTABLE)
-    sys.exit()
