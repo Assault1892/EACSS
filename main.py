@@ -32,8 +32,7 @@ GAME_EXECUTABLE = ARGS[1:]
 
 
 def get_random_image():
-    # これいる？
-    return SRC_FILES[random.randint(0, len(SRC_FILES) - 1)]
+    return random.choice(SRC_FILES)
 
 
 def check_source_dir():
@@ -43,19 +42,16 @@ def check_source_dir():
     Returns:
         bool : Trueの場合はソースディレクトリが存在し、使用可能。Falseの場合は存在しないか、何らかの理由で使用不可能。
     """
-    # ソースディレクトリの設定確認
-    if SRC_DIR == "":
+    if not SRC_DIR:
         print("ソースディレクトリが設定されていません！")
         return False
-    # ソースディレクトリの存在確認
-    elif pathlib.Path(SRC_DIR).exists() is False:
-        print("ソースディレクトリが存在しません！")
+
+    src_path = pathlib.Path(SRC_DIR)
+    if not src_path.exists() or not SRC_FILES:
+        print("ソースディレクトリが存在しないか、画像ファイルが存在しません！")
         return False
-    elif len(SRC_FILES) == 0:
-        print("ソースディレクトリに画像ファイルが存在しません！")
-        return False
-    else:
-        return True
+
+    return True
 
 
 def check_splashscreen():
@@ -64,28 +60,27 @@ def check_splashscreen():
     Returns:
         bool : Trueの場合はバックアップファイルが存在する。Falseの場合は存在しない。
     """
-    if pathlib.Path("./EasyAntiCheat/SplashScreen.png.orig").exists():
+    backup_path = pathlib.Path("./EasyAntiCheat/SplashScreen.png.orig")
+    if backup_path.exists():
         print("バックアップファイルがすでに存在します！")
         return True
-    else:
-        print("オリジナルのファイルが存在しません。おそらく初回起動のようです！")
-        return False
+
+    print("オリジナルのファイルが存在しません。おそらく初回起動のようです！")
+    return False
 
 
 def backup_splashscreen(isSplashExist: bool):
-    if isSplashExist is False:
+    if not isSplashExist:
         print("バックアップを作成します！")
         shutil.copy(
             "./EasyAntiCheat/SplashScreen.png",
             "./EasyAntiCheat/SplashScreen.png.orig"
         )
         print("バックアップが完了しました！")
-    else:
-        pass
 
 
 def restore_splashscreen(isSplashExist: bool):
-    if isSplashExist is True:
+    if isSplashExist:
         print("バックアップから復元します！")
         shutil.copy(
             "./EasyAntiCheat/SplashScreen.png.orig",
@@ -94,7 +89,6 @@ def restore_splashscreen(isSplashExist: bool):
         print("バックアップからの復元が完了しました！")
     else:
         print("バックアップファイルが存在しません！")
-        pass
 
 # MARK: MAIN FUNCTION
 
